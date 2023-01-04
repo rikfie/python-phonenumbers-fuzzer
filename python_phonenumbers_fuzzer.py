@@ -49,7 +49,7 @@ TESTS = [
 ]
 
 def test_one_input(input_bytes):
-    """ Testing phonenumbers AsYouTypeFormatter / input_digit method """
+    """ Fuzzer's entry point """
     if len(input_bytes) < 1:
         return
     choice = struct.unpack('>B', input_bytes[:1])[0]
