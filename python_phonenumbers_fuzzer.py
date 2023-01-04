@@ -13,48 +13,55 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+""" Harnass for fuzzing https://github.com/daviddrysdale/python-phonenumbers.git """
 
-import sys, struct, time
+import sys
+import struct
 import atheris
 import phonenumbers
 from phonenumbers import NumberParseException
 
 def test_parse(inp):
+    """ Testing phonenumbers parse method """
     try:
-        pn = phonenumbers.parse(inp, None)
-        phonenumbers.is_possible_number(pn)
+        phone_number = phonenumbers.parse(inp, None)
+        phonenumbers.is_possible_number(phone_number)
     except NumberParseException:
         return
 
 def test_matcher(inp):
+    """ Testing phonenumbers PhoneNumberMatcher method """
     phonenumbers.PhoneNumberMatcher(inp, "US")
-    
+
 def test_input_digit(inp):
-    #try:
-    formatter = phonenumbers.AsYouTypeFormatter("US")
-    formatter.input_digit(inp)
-    #except TypeError:
-    #    return
-    
-    
-tests = [
+    """ Testing phonenumbers AsYouTypeFormatter / input_digit method """
+    try:
+        formatter = phonenumbers.AsYouTypeFormatter("US")
+        formatter.input_digit(inp)
+    except TypeError:
+        return
+
+
+TESTS = [
     test_parse,
     test_matcher,
     test_input_digit,
 ]
 
-def TestOneInput(input_bytes):
+def test_one_input(input_bytes):
+    """ Testing phonenumbers AsYouTypeFormatter / input_digit method """
     if len(input_bytes) < 1:
         return
     choice = struct.unpack('>B', input_bytes[:1])[0]
-    if choice >= len(tests):
+    if choice >= len(TESTS):
         return
     fdp = atheris.FuzzedDataProvider(input_bytes[1:])
     inp = fdp.ConsumeUnicode(sys.maxsize)
-    tests[choice](inp)
+    TESTS[choice](inp)
 
 def main():
-    atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=False)
+    """ main function """
+    atheris.Setup(sys.argv, test_one_input, enable_python_coverage=False)
     atheris.Fuzz()
 
 
