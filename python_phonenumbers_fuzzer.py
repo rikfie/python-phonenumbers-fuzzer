@@ -30,11 +30,11 @@ def test_matcher(inp):
     phonenumbers.PhoneNumberMatcher(inp, "US")
     
 def test_input_digit(inp):
-    try:
-        formatter = phonenumbers.AsYouTypeFormatter("US")
-        formatter.input_digit(inp)
-    except TypeError:
-        return
+    #try:
+    formatter = phonenumbers.AsYouTypeFormatter("US")
+    formatter.input_digit(inp)
+    #except TypeError:
+    #    return
     
     
 tests = [
