@@ -14,20 +14,44 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
+import sys, struct, time
 import atheris
 import phonenumbers
 from phonenumbers import NumberParseException
 
-
-def TestOneInput(input_bytes):
-    fdp = atheris.FuzzedDataProvider(input_bytes)
-    inp = fdp.ConsumeUnicode(sys.maxsize)
+def test_parse(inp):
     try:
-        phonenumbers.parse(inp, None)
+        pn = phonenumbers.parse(inp, None)
+        phonenumbers.is_possible_number(pn)
     except NumberParseException:
         return
+
+def test_matcher(inp):
+    phonenumbers.PhoneNumberMatcher(inp, "US")
     
+def test_input_digit(inp):
+    try:
+        formatter = phonenumbers.AsYouTypeFormatter("US")
+        formatter.input_digit(inp)
+    except TypeError:
+        return
+    
+    
+tests = [
+    test_parse,
+    test_matcher,
+    test_input_digit,
+]
+
+def TestOneInput(input_bytes):
+    if len(input_bytes) < 1:
+        return
+    choice = struct.unpack('>B', input_bytes[:1])[0]
+    if choice >= len(tests):
+        return
+    fdp = atheris.FuzzedDataProvider(input_bytes[1:])
+    inp = fdp.ConsumeUnicode(sys.maxsize)
+    tests[choice](inp)
 
 def main():
     atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=False)
