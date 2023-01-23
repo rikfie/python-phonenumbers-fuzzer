@@ -107,10 +107,6 @@ def helper_matcher(inp, leniency):
     matcher = phonenumbers.PhoneNumberMatcher(inp, "US", leniency=leniency)
     if matcher.has_next():
         matcher.next()
-    #while matcher.has_next() and len(matches) == 2:
-    #    matches.append(matcher.next())
-    #if len(matches) > 1:
-    #    phonenumbers.is_number_match(matches[0].number, matches[1].raw_string)
 
 def test_matcher_possible(inp):
     """ Testing phonenumbers PhoneNumberMatcher method, leniency: possible """
