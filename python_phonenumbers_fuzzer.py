@@ -172,45 +172,63 @@ def test_supported_types_for_non_geo_entity(inp):
     """ Testing phonenumbers supported_types_for_non_geo_entity method """
     phonenumbers.supported_types_for_non_geo_entity(inp)
 
+LONGSTR = 1
+MEDIUMSTR = 2
+SHORTSTR = 3
+SSHORTSTR = 4
+
 TESTS = [
-    test_is_possible_number,
-    test_is_valid_number,
-    test_can_be_internationally_dialled,
-    test_length_of_geographical_area_code,
-    test_length_of_national_destination_code,
-    test_is_number_geographical,
-    test_national_significant_number,
-    test_is_possible_short_number,
-    test_is_valid_short_number,
-    test_expected_cost,
-    test_connects_to_emergency_number,
-    test_is_emergency_number,
-    test_is_carrier_specific,
-    test_matcher_possible,
-    test_matcher_valid,
-    test_matcher_strict_grouping,
-    test_matcher_exact_grouping,
-    test_input_digit,
-    test_input_digit_per_digit,
-    test_is_mobile_number_portable_region,
-    test_convert_alpha_characters_in_number,
-    test_normalize_digits_only,
-    test_normalize_diallable_chars_only,
-    test_country_mobile_token,
-    test_supported_types_for_region,
-    test_supported_types_for_non_geo_entity,
+    (test_is_possible_number, str),
+    (test_is_valid_number, str),
+    (test_can_be_internationally_dialled, str),
+    (test_length_of_geographical_area_code, str),
+    (test_length_of_national_destination_code, str),
+    (test_is_number_geographical, str),
+    (test_national_significant_number, str),
+    (test_is_possible_short_number, str),
+    (test_is_valid_short_number, str),
+    (test_expected_cost, str),
+    (test_connects_to_emergency_number, LONGSTR),
+    (test_is_emergency_number, LONGSTR),
+    (test_is_carrier_specific, str),
+    (test_matcher_possible, SHORTSTR),
+    (test_matcher_valid, SHORTSTR),
+    (test_matcher_strict_grouping, SHORTSTR),
+    (test_matcher_exact_grouping, SHORTSTR),
+    (test_input_digit, str),
+    (test_input_digit_per_digit, SSHORTSTR),
+    (test_is_mobile_number_portable_region, str),
+    (test_convert_alpha_characters_in_number, LONGSTR),
+    (test_normalize_digits_only, LONGSTR),
+    (test_normalize_diallable_chars_only, LONGSTR),
+    (test_country_mobile_token, str),
+    (test_supported_types_for_region, str),
+    (test_supported_types_for_non_geo_entity, str),
 ]
+
+def get_input(input_bytes, idx):
+    """ Get input of the right type/size """
+    fdp = atheris.FuzzedDataProvider(input_bytes)
+    if TESTS[idx][1] == str:
+        return fdp.ConsumeUnicode(sys.maxsize)
+    if TESTS[idx][1] == LONGSTR:
+        return fdp.ConsumeUnicode(100000)
+    if TESTS[idx][1] == MEDIUMSTR:
+        return fdp.ConsumeUnicode(10000)
+    if TESTS[idx][1] == SHORTSTR:
+        return fdp.ConsumeUnicode(1000)
+    if TESTS[idx][1] == SSHORTSTR:
+        return fdp.ConsumeUnicode(100)
+    return None
 
 def test_one_input(input_bytes):
     """ Fuzzer's entry point """
     if len(input_bytes) < 1:
         return
-    choice = struct.unpack('>B', input_bytes[:1])[0]
-    if choice >= len(TESTS):
+    idx = struct.unpack('>B', input_bytes[:1])[0]
+    if idx >= len(TESTS):
         return
-    fdp = atheris.FuzzedDataProvider(input_bytes[1:])
-    inp = fdp.ConsumeUnicode(sys.maxsize)
-    TESTS[choice](inp)
+    TESTS[idx][0](get_input(input_bytes[1:], idx))
 
 def main():
     """ main function """
